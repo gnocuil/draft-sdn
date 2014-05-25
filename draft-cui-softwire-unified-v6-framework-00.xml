@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="US-ASCII"?>
-<!-- edited by Yuchi Chen, Tsinghua University -->
-<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+
 <?rfc toc="yes"?>
 <?rfc tocompact="yes"?>
 <?rfc tocdepth="6"?>
@@ -8,6 +7,16 @@
 <?rfc sortrefs="yes"?>
 <?rfc autobreaks="no"?>
 <?rfc subcompact="no"?>
+
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+    <!ENTITY rfc2119 PUBLIC "" "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml">
+    <!ENTITY rfc6146 PUBLIC "" "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6146.xml">
+    <!ENTITY rfc6241 PUBLIC "" "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6241.xml">
+    <!ENTITY rfc6333 PUBLIC "" "http://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6333.xml">
+    
+    <!ENTITY I-D.ietf-softwire-lw4over6 SYSTEM 'http://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-softwire-lw4over6.xml'>
+    <!ENTITY I-D.ietf-softwire-map SYSTEM 'http://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-softwire-map.xml'>
+]>
 
 <rfc category="std" docName="draft-cui-softwire-unified-v6-framework-01" ipr="trust200902">
     
@@ -52,9 +61,9 @@
     	 This framework makes use of the flow-based packet forwarding technology,
     	  which can simplify the implementation of both control plane and data plane operations of transition mechanisms.
     	  The purpose of this work is to provide an integrated and flexible framework to implement and deploy the most popular translation and tunneling mechanisms,
-    	  such as NAT64, DS-Lite, Lightweight 4over6 and MAP-E.
+    	  such as MAP-E, Lightweight 4over6, DS-Lite, NAT64 etc.
     	  This framework can benefit the industry by reducing the cost of implementation,
-    	  providing flexibility for deployment, and enabling transition mechanisms to coexist and cooperate in the common infrastructure.
+    	  providing flexibility for deployment, and allowing transition mechanisms to coexist and cooperate in the common infrastructure.
     </t>     
   </abstract>
   
@@ -72,19 +81,16 @@
     <t>Currently several translation and tunneling mechanisms have been proposed,
     	 such as NAT64 <xref target="RFC6146"></xref>, DS-Lite <xref target="RFC6333"></xref>, Lightweight 4over6 <xref target="I-D.ietf-softwire-lw4over6"></xref> and MAP-E <xref target="I-D.ietf-softwire-map"></xref>.
     	 These mechanisms have been or being implemented by the industry.
-    	 Nowadays Internet Service Providers (ISPs) usually should deploy multiple parallel mechanisms in order to fulfill transition requirements.
-    	 However, the concurrent deployment and management of several mechanisms are not cost-effective.
-    	 In addition, the suitable transition mechanisms may change along the ISP's transition period.
-    	 It's complicated to replace the previous implementations with the new devices.
+    	 However, the suitable transition mechanisms may change along the ISP's transition period.
+    	 It's complicated and a big cost to upgrade existing devices to support new mechanisms.
     </t>
     
     <t>This document describes a unified IPv6 transition framework.
-    	 This framework adopts a kind of flow-based packet forwarding technology,
+    	 This framework adopts flow-based packet forwarding technology on forwarding devices,
     	 which can simplify the implementation of both control plane and data plane operations of transition mechanisms.
     	 The purpose of this work is to provide an integrated framework to implement the most popular transition mechanisms
-    	 like NAT64, DS-Lite, Lightweight 4over6 and MAP-E.
-    	 This framework can benefit the industry by reducing the cost of implementing and deploying transition mechanisms,
-    	 and enable these mechanisms to coexist in the common infrastructure.
+    	 like MAP-E, Lightweight 4over6, DS-Lite, NAT64 etc.
+    	 This framework can benefit the industry by reducing the cost of implementing and deploying transition mechanisms.
     </t>  
   
   </section>
@@ -93,24 +99,22 @@
     <t>This document uses the following terms:</t>
       
     <t><list style="hanging" hangIndent="25">
-       <t hangText="Customer Premises Equipment Switch (CPE Switch):">The dual-stack L3 swtich that performs the flow-based packet forwarding function.
-       	  It is the local gateway of the customer LAN, and connects to the IPv6 ISP network.
+       <t hangText="Customer Premises Equipment Switch (CPE Switch):">A dual-stack L3 switch that performs the flow-based packet forwarding function.
+       	  It can be the home gateway of customer network or BNG.
        </t>
 
-       <t hangText="Border Relay Switch (BR Switch):">The dual-stack L3 switch that performs the flow-based packet forwarding function.
-       	  It is the entry of the IPv6 ISP network to the IPv4/ IPv6 Internet.
+       <t hangText="Border Relay Switch (BR Switch):">A dual-stack L3 switch that performs the flow-based packet forwarding function.
+       	  It is on the boarder of the ISP network and IPv4/ IPv6 Internet.
        </t>
        
-       <t hangText="Controller:">The centrallized manager that controls both CPE Switch and BR Switch.
+       <t hangText="Controller:">A centrallized manager that controls both CPE Switch and BR Switch.
        	  Controller can be a single device or a cluster of devices.
-       	  It can connect to the CPE Switch and BR Switch through specific links. 
        </t>
           
        <t hangText="Flow-based Packet Forwarding:">A function that forwards packets according to the forwarding rules specified by a flow table.
-       	  Each of these rules includes a match field and a action set.
-       	  The match field specifies a certain flow.
-       	  This flow is a set of packets that share some common features (e.g. same source and destionation address).
-       	  The action set specifies the actions that should act on the certain flow.
+       	  A typical forwarding rule includes a match field and a action set.
+       	  The match field specifies a certain flow, which is a set of packets that share some common features (e.g. same source and destionation address).
+       	  The action set specifies the actions that should act on the certain flow (e.g. forward, encapsulate, or IP translate).
        </t>
     </list></t>
   
@@ -124,7 +128,7 @@
     	 The IPv6 ISP Network is the access network, and it accesses the IPv4/IPv6 Internet through BR Switch.
     </t> 
     
-    <figure>
+    <figure align="center">
     <artwork><![CDATA[                                                               
                             +---------------+
                       ______|  Controller   |______
@@ -222,59 +226,59 @@
 <back>
 
   <references title="Normative References">
-    <?rfc include="reference.RFC.2119" ?>
-    <?rfc include="reference.RFC.6146" ?>
-    <?rfc include="reference.RFC.6241" ?> 
-    <?rfc include="reference.RFC.6333" ?>    
+    &rfc2119;
+    &rfc6146;
+    &rfc6241;
+    &rfc6333;  
   </references>
 
   <references title="Informative References">
-    <?rfc include="reference.I-D.ietf-softwire-lw4over6" ?>
-  	<?rfc include="reference.I-D.ietf-softwire-map" ?>
+    &I-D.ietf-softwire-lw4over6;
+  	&I-D.ietf-softwire-map;
   </references>
  
   <section anchor="appendix" title="Examples">
     <t>Both CPE Switch and BR Switch can perform mulitiple mechanism functions at the same time. When receving a flow that has a match in the flow table, they should determine how to proceed this packet according to the corresponding matched actions in the flow table. Table 1 shows an example about how can CPE Switch or BR Switch choose the right action automatically.</t>
  
-    <figure title="Table 1 Auto Processing of Flows">
+    <figure title="Table 1 Auto Processing of Flows" align="center">
     <artwork align="center"><![CDATA[ 
    
-   +--------+---------------+-----------------------+------------------+
-   | Switch |   Flow type   |    Matched actions    |    Processing    |
-   +--------+---------------+-----------------------+------------------+
-   |        |               |     Encapsulation     |  encapsulate v6  |
-   |        |               |                       |      header      |
-   |        | Outbound IPv4 | --------------------- | ---------------- |
-   |        |               |                       |     NAT44 ->     |
-   |        |               | NAT44 + Encapsulation |  encapsulate v6  |
-   |        |               |                       |      header      |
-   |        | ------------- | --------------------- | ---------------- |
-   |        | Outbound IPv6 |                       |     NAT64 ->     |
-   |        |               | NAT64 + Encapsulation |  encapsulate v6  |
-   |        |               |                       |      header      |
-   |  CPE   | ------------- | --------------------- | ---------------- |
-   |        |               |     Decapsulation     |  decapsulate v6  |
-   |        |               |                       |      header      |
-   |        |               | --------------------- | ---------------- |
-   |        |  Inbound IPv6 | NAT44 + Decapsulation |  decapsulate v6  |
-   |        |               |                       | header -> NAT44  |
-   |        |               | --------------------- | ---------------- |
-   |        |               | NAT64 + Decapsulation |  decapsulate v6  |
-   |        |               |                       | header -> NAT64  |
-   | ------ | ------------- | --------------------- | ---------------- |
-   |        |               | NAT44 + Decapsulation |  decapsulate v6  |
-   |        |               |                       | header -> NAT44  |
-   |        | Outbound IPv6 | --------------------- | ---------------- |
-   |        |               |     Decapsulation     |  decapsulate v6  |
-   |        |               |                       |      header      |
-   |   BR   | ------------- | --------------------- | ---------------- |
-   |        |               |                       |     NAT44 ->     |
-   |        |               | NAT44 + Encapsulation |  encapsulate v6  |
-   |        |               |                       |      header      |
-   |        |  Inbound IPv4 | --------------------- | ---------------- |
-   |        |               |     Encapsulation     |  encapsulate v6  |
-   |        |               |                       |      header      |
-   +--------+---------------+-----------------------+------------------+   
++--------+---------------+-----------------------+------------------+
+| Switch |   Flow type   |    Matched actions    |    Processing    |
++--------+---------------+-----------------------+------------------+
+|        |               |     Encapsulation     |  encapsulate v6  |
+|        |               |                       |      header      |
+|        | Outbound IPv4 | --------------------- | ---------------- |
+|        |               |                       |     NAT44 ->     |
+|        |               | NAT44 + Encapsulation |  encapsulate v6  |
+|        |               |                       |      header      |
+|        | ------------- | --------------------- | ---------------- |
+|        | Outbound IPv6 |                       |     NAT64 ->     |
+|        |               | NAT64 + Encapsulation |  encapsulate v6  |
+|        |               |                       |      header      |
+|  CPE   | ------------- | --------------------- | ---------------- |
+|        |               |     Decapsulation     |  decapsulate v6  |
+|        |               |                       |      header      |
+|        |               | --------------------- | ---------------- |
+|        |  Inbound IPv6 | NAT44 + Decapsulation |  decapsulate v6  |
+|        |               |                       | header -> NAT44  |
+|        |               | --------------------- | ---------------- |
+|        |               | NAT64 + Decapsulation |  decapsulate v6  |
+|        |               |                       | header -> NAT64  |
+| ------ | ------------- | --------------------- | ---------------- |
+|        |               | NAT44 + Decapsulation |  decapsulate v6  |
+|        |               |                       | header -> NAT44  |
+|        | Outbound IPv6 | --------------------- | ---------------- |
+|        |               |     Decapsulation     |  decapsulate v6  |
+|        |               |                       |      header      |
+|   BR   | ------------- | --------------------- | ---------------- |
+|        |               |                       |     NAT44 ->     |
+|        |               | NAT44 + Encapsulation |  encapsulate v6  |
+|        |               |                       |      header      |
+|        |  Inbound IPv4 | --------------------- | ---------------- |
+|        |               |     Encapsulation     |  encapsulate v6  |
+|        |               |                       |      header      |
++--------+---------------+-----------------------+------------------+   
     ]]></artwork>    
     </figure>
     
