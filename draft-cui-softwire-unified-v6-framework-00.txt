@@ -1,10 +1,12 @@
 
 
 
+
 Network Working Group                                             Y. Cui
 Internet-Draft                                                   Y. Chen
 Intended status: Standards Track                     Tsinghua University
-Expires: November 24, 2014                                  May 25, 2014
+Expires: December 11, 2014                                  June 9, 2014
+
 
       Unified IPv6 Transition Framework With Flow-based Forwarding
                draft-cui-softwire-unified-v6-framework-01
@@ -28,7 +30,7 @@ Requirements Language
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
    document are to be interpreted as described in [RFC2119].
 
-Status of this Memo
+Status of This Memo
 
    This Internet-Draft is submitted in full conformance with the
    provisions of BCP 78 and BCP 79.
@@ -43,7 +45,18 @@ Status of this Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on November 24, 2014.
+   This Internet-Draft will expire on December 11, 2014.
+
+
+
+
+
+
+
+Cui & Chen              Expires December 11, 2014               [Page 1]
+
+Internet-Draft       Unified v6 Transition Framework           June 2014
+
 
 Copyright Notice
 
@@ -51,197 +64,235 @@ Copyright Notice
    document authors.  All rights reserved.
 
    This document is subject to BCP 78 and the IETF Trust's Legal
-   Provisions Relating to IETF Documents (http://trustee.ietf.org/
-   license-info) in effect on the date of publication of this document.
-
-Cui & Chen             Expires November 24, 2014                [Page 1]
-
-Internet-Draft      Unified v6 Transition Framework             May 2014
-
-   Please review these documents carefully, as they describe your rights
-   and restrictions with respect to this document.  Code Components
-   extracted from this document must include Simplified BSD License text
-   as described in Section 4.e of the Trust Legal Provisions and are
-   provided without warranty as described in the Simplified BSD License.
+   Provisions Relating to IETF Documents
+   (http://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
+   the Trust Legal Provisions and are provided without warranty as
+   described in the Simplified BSD License.
 
 Table of Contents
 
-   1.  Introduction . . . . . . . . . . . . . . . . . . . . . . . . .  2
-   2.  Terminology  . . . . . . . . . . . . . . . . . . . . . . . . .  2
-   3.  Framework Overview . . . . . . . . . . . . . . . . . . . . . .  3
-   4.  Control Plane Behavior . . . . . . . . . . . . . . . . . . . .  4
-   5.  Data Plane Behavior  . . . . . . . . . . . . . . . . . . . . .  4
-   6.  Security Considerations  . . . . . . . . . . . . . . . . . . .  5
-   7.  IANA Considerations  . . . . . . . . . . . . . . . . . . . . .  5
-   8.  References . . . . . . . . . . . . . . . . . . . . . . . . . .  5
-     8.1.  Normative References . . . . . . . . . . . . . . . . . . .  5
-     8.2.  Informative References . . . . . . . . . . . . . . . . . .  5
-   Appendix A. Examples . . . . . . . . . . . . . . . . . . . . . . .  6
-   Authors' Addresses . . . . . . . . . . . . . . . . . . . . . . . .  6
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   3
+   3.  Framework Overview  . . . . . . . . . . . . . . . . . . . . .   3
+   4.  Control Plane Behavior  . . . . . . . . . . . . . . . . . . .   4
+   5.  Data Plane Behavior . . . . . . . . . . . . . . . . . . . . .   5
+   6.  Example: MAP-E/Lightweight 4over6 mode  . . . . . . . . . . .   5
+   7.  Security Considerations . . . . . . . . . . . . . . . . . . .   6
+   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   6
+   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   6
+     9.1.  Normative References  . . . . . . . . . . . . . . . . . .   6
+     9.2.  Informative References  . . . . . . . . . . . . . . . . .   6
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   7
 
 1.  Introduction
 
-   Currently several IPv6 mechanisms have been
+   Currently several translation and tunneling mechanisms have been
    proposed, such as NAT64 [RFC6146], DS-Lite [RFC6333], Lightweight
-   4over6 [I-D.ietf-softwire-lw4over6] and MAP-E [I-D.ietf-softwire-
-   map].  These mechanisms have been or being implemented by the
-   industry.  However, the suitable transition mechanisms may change
-   along the ISP's transition period.  It's complicated and a big cost
-   to upgrade existing devices to support new mechanisms.
+   4over6 [I-D.ietf-softwire-lw4over6] and MAP-E
+   [I-D.ietf-softwire-map].  These mechanisms have been or being
+   implemented by the industry.  However, the suitable transition
+   mechanisms may change along the ISP's transition period.  It's
+   complicated and a big cost to upgrade existing devices to support new
+   mechanisms.
 
    This document describes a unified IPv6 transition framework.  This
    framework adopts flow-based packet forwarding technology on
-   forwarding devices, which can simplify the implementation of both
+   transition devices, which can simplify the implementation of both
    control plane and data plane operations of transition mechanisms.
-   The purpose of this work is to provide an integrated framework to
-   implement the most popular transition mechanisms like MAP-E,
-   Lightweight 4over6, DS-Lite, NAT64 etc.  This framework can benefit
-   the industry by reducing the cost of implementing and deploying
-   transition mechanisms.
+   The forwarding rules of transition devices are controlled by
+   centrallized Controller and can be changed easily, thus this
+   framework can cover all existing transition scenarios, e.g.  IPv4
+
+
+
+Cui & Chen              Expires December 11, 2014               [Page 2]
+
+Internet-Draft       Unified v6 Transition Framework           June 2014
+
+
+   over IPv6 hub and spoke model that MAP-E or DS-Lite does.  This
+   framework can benefit the industry by reducing the cost of
+   implementing and deploying transition mechanisms.
 
 2.  Terminology
 
    This document uses the following terms:
 
-   Customer Premises Equipment Switch (CPE Switch): A dual-stack L3
+   Customer Premises Equipment Switch (CPE Switch):  A dual-stack L3
                             switch that performs the flow-based packet
                             forwarding function.  It can be the home
-                            gateway of customer network or BNG.
+                            gateway or BNG.
 
-   Border Relay Switch (BR Switch): A dual-stack L3 switch that performs
-                            the flow-based packet forwarding function.
-                            It is on the boarder of the ISP network and
-                            IPv4/ IPv6 Internet.
-
-Cui & Chen             Expires November 24, 2014                [Page 2]
-
-Internet-Draft      Unified v6 Transition Framework             May 2014
-
+   Border Relay Switch (BR Switch):  A dual-stack L3 switch that
+                            performs the flow-based packet forwarding
+                            function.  It is on the boarder of the ISP
+                            network and IPv4/ IPv6 Internet.
 
    Controller:              A centrallized manager that controls both
                             CPE Switch and BR Switch.  Controller can be
                             a single device or a cluster of devices.
 
-   Flow-based Packet Forwarding: A function that forwards packets
+   Flow-based Packet Forwarding:  A function that forwards packets
                             according to the forwarding rules specified
                             by a flow table.  A typical forwarding rule
                             includes a match field and a action set.
                             The match field specifies a certain flow,
                             which is a set of packets that share some
-                            common features (e.g.  same source and
+                            common features (e.g. same source and
                             destionation address).  The action set
                             specifies the actions that should act on the
-                            certain flow (e.g.  forward, encapsulate, or
+                            certain flow (e.g. forward, encapsulate, or
                             IP translate).
 
 3.  Framework Overview
 
    The architecture of the proposed unified IPv6 transition framework is
-   illustrated in Figure 1.  The customer LAN is a dual-stack/ IPv6
-   network, in which there could be arbitrary customer end devices.  A
-   DHCP server could be deployed in this network, in order to provision
-   private IPv4 addresses to the end devices.  The customer LAN connects
-   the IPv6 ISP network through CPE Switch.  The IPv6 ISP Network is the
-   access network, and it accesses the IPv4/IPv6 Internet through BR
-   Switch.
+   illustrated in Figure 1.  The customer LAN connects the IPv6 ISP
+   network through CPE Switch.  The ISP Network accesses the Internet
+   through BR Switch.  All devices in the ISP Network are not required
+   to be managed by the Controller, thus the operator only needs to
+   upgrade the CPEs and BRs.
 
-                               +---------------+
-                         ______|  Controller   |______
-                        |      |               |      |
-                        |      +---------------+      |
-                        |                             |
-    ______________      v       _______________       v      ______________
-   |              | +--------+ |               | +--------+ |              |
-   | Customer LAN |_|  CPE   |_|    IPv6 ISP   |_|   BR   |_|  IPv4/ IPv6  |
-   |(dual-stack/  | | Switch | |    Network    | | Switch | |   Internet   |
-   | IPv6 network)| +--------+ |               | +--------+ |______________|
-   |______________|            |_______________|
-   
 
-                      Figure 1  Architecture Overview
 
-   CPE Switch performs the flow-based packet forwarding function.  It
-   MUST support the softwire encapsulation/ decapuslation function
-   specified in [RFC6333], [I-D.ietf-softwire-lw4over6] and [I-D.ietf-
-   softwire-map].  It MUST also support traditional NAPT44 and NAT64
-   translator ([RFC6146]) function.
 
-   BR Switch also performs the flow-based packet forwarding function.
-   It MUST support the softwire encapsulation/ decapuslation function
-   specified in [RFC6333], [I-D.ietf-softwire-lw4over6] and [I-D.ietf-
-   softwire-map].  Particularly, it MUST support the port-set matching
-   for incoming IPv4 packets, which is defined in section 6.2 of [I-D
 
-Cui & Chen             Expires November 24, 2014                [Page 3]
+
+
+
+
+Cui & Chen              Expires December 11, 2014               [Page 3]
 
-Internet-Draft      Unified v6 Transition Framework             May 2014
+Internet-Draft       Unified v6 Transition Framework           June 2014
 
-   .ietf-softwire-lw4over6].
 
-   Controller is responsible for controlling the performance of both CPE
-   Switch and BR Switch.  Controller can be an individual device or a
-   cluster of devices.  In case of being a cluster, Controller can be
-   implemented by mulitiple physic or virtual machines, and each machine
-   connects to a Switch.  It must configure the forwarding rules in the
-   flow tables maintained by the CPE Switch and BR Switch.  It maintains
-   the NAPT44 state and NAT64 state that is associated with the CPE
-   Switch.  It also maintains the NAPT44 state, MAP mapping rules, and
-   Lightweight 4over6 binding table state that are associated with the
-   BR Switch.
+                            +---------------+
+                      ______|  Controller   |______
+                     |      |               |      |
+                     |      +---------------+      |
+                     |                             |
+ ______________      v       _______________       v      ______________
+|              | +--------+ |               | +--------+ |              |
+| Customer LAN |_|  CPE   |_|      ISP      |_|   BR   |_|   Internet   |
+|              | | Switch | |    Network    | | Switch | |              |
+|              | +--------+ |               | +--------+ |______________|
+|______________|            |_______________|
+
+
+                      Figure 1 Architecture Overview
+
+   Both CPE Switch and BR Switch perform flow-based forwarding, and are
+   managed by the Controller.  Since CPE Switch can work as a gateway of
+   the customer network, it also needs to support traditional CPE
+   function, such as DHCPv4 server and be compatible with [RFC7084].
+
+   Controller is responsible for controlling the forwarding behavior of
+   both CPE Switch and BR Switch.  Controller can be an individual
+   device or a cluster of devices.  The Controller configures the
+   forwarding rules in the flow tables maintained by the CPE Switch and
+   BR Switch according to the packets passed from Switches.
 
    Controller communicates with Switch using protocols that is able to
-   carry flow information and flow table configuration, such as NETCONF
-   [RFC6241], Openflow, etc.
+   carry flow information and flow table configuration, such as Openflow
+   [OpenFlow].
 
 4.  Control Plane Behavior
 
-   At least one softwire mechanism (e.g.  DS-Lite , Lightweight 4over6
-   or MAP-E) should be deployed in the system.  Multiple softwire
-   mechanisms can be deployed at the same time.  This situation includes
-   two cases: (1) mechanisms are implemented in different devices (e.g.
-   DS-Lite B4 and Lightweight 4over6 LwB4 are implemented in different
-   CPE Switches); (2) mechanisms are activated in the same devices (e.g.
-   both DS-Lite B4 and LwB4 are activated in the same CPE Switch).  In
-   the first case, Controller can distinguish the CPE Switches or BR
-   Switches by their addresses; in the second case, CPE Switch and BR
-   Switch can apply actions of different mechanisms to different flows
-   according to the flow table.
+   The Controller configures both CPE Switch and BR Switch through flow
+   configuration.  The switches are configured or pre-installed with
+   default forwarding policy that forwards all unknown flows to the
+   controller.  The controller then installs a forwarding rule for the
+   specific flow into the switch.  All remaining packets of the same
+   flow are processed based on this rule and will not be forwarded to
+   the Controller.  The definition of a flow depends on the forwording
+   policy.  For example, in MAP-E or Lightweight 4over6 scenario, the BR
+   Switch treats all traffic from the same sender as a single flow.
 
-   The end devices in the customer LAN can be provisioned with private
-   IPv4 addresses by a local DHCP server.  They can also be provisioned
-   with at least one global IPv6 address.
+   Some transition mechanisms require provisioning parameters to CPE.
+   For example, DS-Lite, MAP-E and Lightweight 4over6 use DHCPv6 to
+   provision IPv6 address of AFTR/BR to CPE.  Lightweight 4over6
+   provision IPv6 address and ports to CPE.  Since these parameters can
+   be represented by flow forwarding rules, in this framework such
+   DHCPv6 based provisioning is not required.  Instead these softwire
 
-   CPE Switch and BR Switch MUST be provisioned with at least one IPv6
-   address in the IPv6 ISP network.  They MUST be configured with
-   default forwarding rules by Controller.  These default rules should
-   cover actions such as forward-to-controller action and default
-   encapsulation/ decapsulation action.  Note that configuring default
-   encapsulation/ decapsulation rules can be regarded as establishing a
-   tunnel between CPE Switch and BR Switch if Lightweight 4over6 or
-   MAP-E is deployed in the network.
+
+
+Cui & Chen              Expires December 11, 2014               [Page 4]
+
+Internet-Draft       Unified v6 Transition Framework           June 2014
+
+
+   configuration are embeded into forwarding rules and provisioned to
+   CPE Switch through flow configuration.  The device configuration that
+   flow-based configuration doesn't support is still required, such as
+   DHCPv6 prefix delegation.
 
 5.  Data Plane Behavior
 
    When receiving an incoming packet that doesn't have a match in the
-   flow table (usually the intial packet of a new flow), CPE Switch and
-   BR Switch MUST forward the packet to Controller.  Controller MUST
-   determine how to proceed the flow (e.g.  whether to apply NAT/ NAT64
-   translation and/ or softwire encapsluaton/ decapuslutaion), and
-   interpret the process into a set of forwarding rule configurations.
-   Controller then passes these configurations to CPE Swtich and BR
-   Switch.  CPE Switch and BR Switch then configure their flow table
+   flow table (the intial packet of a new flow), CPE Switch and BR
+   Switch MUST forward the packet to Controller.  Controller MUST
+   determine how to proceed the flow (e.g.  IP tunneling encapsluaton/
+   decapuslutaion, IP translation, etc.), and interpret the process into
+   a set of forwarding rule configurations.  Controller then installs
+   these configurations to CPE Swtich and BR Switch.  When receiving the
+   subsequent packets of the flow, CPE Switch and BR Switch will apply
+   the same actions to them, according to the forwarding rules in the
+   flow table.
 
-Cui & Chen             Expires November 24, 2014                [Page 4]
+   Both CPE Switch and BR Switch MUST support the IPv6 tunneling
+   encapsulation/decapuslation function required in [RFC6333],
+   [I-D.ietf-softwire-lw4over6] and [I-D.ietf-softwire-map].  In IPv4/
+   IPv6 translation scenario such as NAT64, the switch MUST support
+   IPv4/IPv6 packet translation function.  These functions can be
+   implemented either as processing actions in flow forwarding rules, or
+   as standalone modules and provide a virtual interface to the switch
+   module.
+
+   In MAP-E/Lightweight 4over6 CPE and DS-Lite AFTR, NAT44 is required.
+   In this framework, NAT44 can be simply supported by flow-based
+   forwarding rules.  Since typical flow-based forwarding mechanism
+   support procotol header modification, e.g. set-field action in
+   OpenFlow, NAT44 can be implemented as modification of source/
+   destination IPv4 addresseses and ports.  In this case, the flows are
+   identified by 5-tuples and the first packet of each flow is passed to
+   the Controller.  NAT44 can also be implemented as a standlone
+   function into switches, in this case passing the first packet of each
+   5-tuple flow to controller is not needed.
+
+6.  Example: MAP-E/Lightweight 4over6 mode
+
+   This section discusses how to run MAP-E/Lightweight 4over6 mode in
+   this framework.  In this mode, The Customer LAN is an IPv4 or dual-
+   stack network, and the ISP Network is an IPv6 network.  Initially the
+   CPE Switch is configured with IPv6 address through DHCPv6 Prefix
+   Delegation and connects to the Controller.  The CPE Switch passes all
+   unknown packets to the Controller.
+
+   The Controller manages the binding between IPv4 addresses and IPv6
+
+
+
+Cui & Chen              Expires December 11, 2014               [Page 5]
 
-Internet-Draft      Unified v6 Transition Framework             May 2014
+Internet-Draft       Unified v6 Transition Framework           June 2014
 
-   according to these configurations, continue to apply the
-   corresponding actions to the packet, and forward it to the next step.
-   When receiving the subsequent packets of the flow, CPE Switch and BR
-   Switch will apply the same actions to them, according to the
-   forwarding rules in the flow table.
 
-6.  Security Considerations
+   addresses.  When a new CPE Switch connects to the Controller, the
+   Controller allocates a preserved or new IPv4 address and a port set
+   for the CPE Switch, by install one or two (for bi-directory)
+   forwarding rule(s) in BR Switch.  In case that CPE's NAT44 stated is
+   maintained in Controller, when received an unknown packet from CPE
+   Switch, the Controller pick one port from the port set of the CPE
+   Switch and installs the forwarding rule in the CPE Switch.  Both
+   forwarding rules in CPE Switch and BR Switch include IPv4-in-IPv6
+   tunneling encapsulation/decapuslation action.
+
+7.  Security Considerations
 
    As Switch should always send unknown flows to Controller, the link
    between Switch and Controller might be vulnerable to a typical DoS
@@ -254,116 +305,77 @@ Internet-Draft      Unified v6 Transition Framework             May 2014
 
    Further security consideration is TBD.
 
-7.  IANA Considerations
+8.  IANA Considerations
 
    This document does not include an IANA request.
 
-8.  References
+9.  References
 
-8.1.  Normative References
+9.1.  Normative References
+
+   [OpenFlow]
+              Open Networking Foundation, "OpenFlow Switch Specification
+              1.4.0",
+              <https://www.opennetworking.org/images/stories/downloads/
+              sdn-resources/onf-specifications/openflow/openflow-spec-
+              v1.4.0.pdf>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119, March 1997.
 
-   [RFC6146]  Bagnulo, M., Matthews, P. and I. van Beijnum, "Stateful
-              NAT64: Network Address and Protocol Translation from IPv6
-              Clients to IPv4 Servers", RFC 6146, April 2011.
-
-   [RFC6241]  Enns, R., Bjorklund, M., Schoenwaelder, J. and A. Bierman,
-              "Network Configuration Protocol (NETCONF)", RFC 6241, June
-              2011.
-
-   [RFC6333]  Durand, A., Droms, R., Woodyatt, J. and Y. Lee, "Dual-
-              Stack Lite Broadband Deployments Following IPv4
-              Exhaustion", RFC 6333, August 2011.
-
-8.2.  Informative References
+9.2.  Informative References
 
    [I-D.ietf-softwire-lw4over6]
-              Cui, Y., Qiong, Q., Boucadair, M., Tsou, T., Lee, Y. and
+              Cui, Y., Qiong, Q., Boucadair, M., Tsou, T., Lee, Y., and
               I. Farrer, "Lightweight 4over6: An Extension to the DS-
-              Lite Architecture", Internet-Draft draft-ietf-softwire-
-              lw4over6-08, March 2014.
+              Lite Architecture", draft-ietf-softwire-lw4over6-09 (work
+              in progress), June 2014.
+
+
+
+Cui & Chen              Expires December 11, 2014               [Page 6]
+
+Internet-Draft       Unified v6 Transition Framework           June 2014
+
 
    [I-D.ietf-softwire-map]
               Troan, O., Dec, W., Li, X., Bao, C., Matsushima, S.,
-              Murakami, T. and T. Taylor, "Mapping of Address and Port
-              with Encapsulation (MAP)", Internet-Draft draft-ietf-
+              Murakami, T., and T. Taylor, "Mapping of Address and Port
+              with Encapsulation (MAP)", draft-ietf-softwire-map-10
+              (work in progress), January 2014.
 
-Cui & Chen             Expires November 24, 2014                [Page 5]
-
-Internet-Draft      Unified v6 Transition Framework             May 2014
+   [RFC6146]  Bagnulo, M., Matthews, P., and I. van Beijnum, "Stateful
+              NAT64: Network Address and Protocol Translation from IPv6
+              Clients to IPv4 Servers", RFC 6146, April 2011.
 
-              softwire-map-10, January 2014.
+   [RFC6241]  Enns, R., Bjorklund, M., Schoenwaelder, J., and A.
+              Bierman, "Network Configuration Protocol (NETCONF)", RFC
+              6241, June 2011.
 
-Appendix A.  Examples
+   [RFC6333]  Durand, A., Droms, R., Woodyatt, J., and Y. Lee, "Dual-
+              Stack Lite Broadband Deployments Following IPv4
+              Exhaustion", RFC 6333, August 2011.
 
-   Both CPE Switch and BR Switch can perform mulitiple mechanism
-   functions at the same time.  When receving a flow that has a match in
-   the flow table, they should determine how to proceed this packet
-   according to the corresponding matched actions in the flow table.
-   Table 1 shows an example about how can CPE Switch or BR Switch choose
-   the right action automatically.
-
-   
-   +--------+---------------+-----------------------+------------------+
-   | Switch |   Flow type   |    Matched actions    |    Processing    |
-   +--------+---------------+-----------------------+------------------+
-   |        |               |     Encapsulation     |  encapsulate v6  |
-   |        |               |                       |      header      |
-   |        | Outbound IPv4 | --------------------- | ---------------- |
-   |        |               |                       |     NAT44 ->     |
-   |        |               | NAT44 + Encapsulation |  encapsulate v6  |
-   |        |               |                       |      header      |
-   |        | ------------- | --------------------- | ---------------- |
-   |        | Outbound IPv6 |                       |     NAT64 ->     |
-   |        |               | NAT64 + Encapsulation |  encapsulate v6  |
-   |        |               |                       |      header      |
-   |  CPE   | ------------- | --------------------- | ---------------- |
-   |        |               |     Decapsulation     |  decapsulate v6  |
-   |        |               |                       |      header      |
-   |        |               | --------------------- | ---------------- |
-   |        |  Inbound IPv6 | NAT44 + Decapsulation |  decapsulate v6  |
-   |        |               |                       | header -> NAT44  |
-   |        |               | --------------------- | ---------------- |
-   |        |               | NAT64 + Decapsulation |  decapsulate v6  |
-   |        |               |                       | header -> NAT64  |
-   | ------ | ------------- | --------------------- | ---------------- |
-   |        |               | NAT44 + Decapsulation |  decapsulate v6  |
-   |        |               |                       | header -> NAT44  |
-   |        | Outbound IPv6 | --------------------- | ---------------- |
-   |        |               |     Decapsulation     |  decapsulate v6  |
-   |        |               |                       |      header      |
-   |   BR   | ------------- | --------------------- | ---------------- |
-   |        |               |                       |     NAT44 ->     |
-   |        |               | NAT44 + Encapsulation |  encapsulate v6  |
-   |        |               |                       |      header      |
-   |        |  Inbound IPv4 | --------------------- | ---------------- |
-   |        |               |     Encapsulation     |  encapsulate v6  |
-   |        |               |                       |      header      |
-   +--------+---------------+-----------------------+------------------+
+   [RFC7084]  Singh, H., Beebee, W., Donley, C., and B. Stark, "Basic
+              Requirements for IPv6 Customer Edge Routers", RFC 7084,
+              November 2013.
 
 Authors' Addresses
 
    Yong Cui
    Tsinghua University
-   Beijing, 100084
-
-Cui & Chen             Expires November 24, 2014                [Page 6]
-
-Internet-Draft      Unified v6 Transition Framework             May 2014
-
+   Beijing  100084
    P.R.China
-   
+
    Phone: +86-10-6260-3059
    Email: yong@csnet1.cs.tsinghua.edu.cn
 
 
    Yuchi Chen
    Tsinghua University
-   Beijing, 100084
+   Beijing  100084
    P.R.China
-   
+
    Phone: +86-10-6278-5822
    Email: chenycmx@gmail.com
 
@@ -377,34 +389,4 @@ Internet-Draft      Unified v6 Transition Framework             May 2014
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Cui & Chen             Expires November 24, 2014                [Page 7]
+Cui & Chen              Expires December 11, 2014               [Page 7]
