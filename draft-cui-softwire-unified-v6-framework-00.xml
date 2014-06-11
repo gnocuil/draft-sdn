@@ -80,8 +80,8 @@
 <middle>
  <section anchor="Introduction" title="Introduction">
     <t>Currently several translation and tunneling mechanisms have been proposed,
-      such as NAT64 <xref target="RFC6146"></xref>, DS-Lite <xref target="RFC6333"></xref>,
-      Lightweight 4over6 <xref target="I-D.ietf-softwire-lw4over6"></xref> and MAP-E <xref target="I-D.ietf-softwire-map"></xref>.
+      such as NAT64 <xref target="RFC6146"></xref>, DS-Lite <xref target="RFC6333"/>,
+      Lightweight 4over6 <xref target="I-D.ietf-softwire-lw4over6"/> and MAP-E <xref target="I-D.ietf-softwire-map"/>.
       These mechanisms have been or being implemented by the industry.
       However, the suitable transition mechanisms may change along the ISP's transition period.
       It's complicated and a big cost to upgrade existing devices to support new mechanisms.
@@ -202,6 +202,12 @@
        NAT44 can be implemented as modification of source/destination IPv4 addresseses and ports. In this case, the flows are identified by 5-tuples
        and the first packet of each flow is passed to the Controller. NAT44 can also be implemented as a standlone function into switches, in this case
        passing the first packet of each 5-tuple flow to controller is not needed.
+    </t>
+    
+    <t>Since MAP-E/Lightweight 4over6 requires port-based IPv4 address sharing, there may be thousands of ports in the same IPv4 address
+       allocated to the same CPE. To reduce the amount of forwarding rules in BR Switch,
+       when BR Switch matching an incoming packet, it SHOULD support the port-set based matching as defined in
+       in Section 5.1 of <xref target="I-D.ietf-softwire-map"/>.
     </t>
   </section>
   

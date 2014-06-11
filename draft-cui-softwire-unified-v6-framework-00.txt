@@ -5,7 +5,7 @@
 Network Working Group                                             Y. Cui
 Internet-Draft                                                   Y. Chen
 Intended status: Standards Track                     Tsinghua University
-Expires: December 11, 2014                                  June 9, 2014
+Expires: December 12, 2014                                 June 10, 2014
 
 
       Unified IPv6 Transition Framework With Flow-based Forwarding
@@ -45,7 +45,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on December 11, 2014.
+   This Internet-Draft will expire on December 12, 2014.
 
 
 
@@ -53,7 +53,7 @@ Status of This Memo
 
 
 
-Cui & Chen              Expires December 11, 2014               [Page 1]
+Cui & Chen              Expires December 12, 2014               [Page 1]
 
 Internet-Draft       Unified v6 Transition Framework           June 2014
 
@@ -80,13 +80,13 @@ Table of Contents
    3.  Framework Overview  . . . . . . . . . . . . . . . . . . . . .   3
    4.  Control Plane Behavior  . . . . . . . . . . . . . . . . . . .   4
    5.  Data Plane Behavior . . . . . . . . . . . . . . . . . . . . .   5
-   6.  Example: MAP-E/Lightweight 4over6 mode  . . . . . . . . . . .   5
+   6.  Example: MAP-E/Lightweight 4over6 mode  . . . . . . . . . . .   6
    7.  Security Considerations . . . . . . . . . . . . . . . . . . .   6
    8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   6
-   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   6
-     9.1.  Normative References  . . . . . . . . . . . . . . . . . .   6
-     9.2.  Informative References  . . . . . . . . . . . . . . . . .   6
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   7
+   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   7
+     9.1.  Normative References  . . . . . . . . . . . . . . . . . .   7
+     9.2.  Informative References  . . . . . . . . . . . . . . . . .   7
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   8
 
 1.  Introduction
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Cui & Chen              Expires December 11, 2014               [Page 2]
+Cui & Chen              Expires December 12, 2014               [Page 2]
 
 Internet-Draft       Unified v6 Transition Framework           June 2014
 
@@ -165,7 +165,7 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
 
 
 
-Cui & Chen              Expires December 11, 2014               [Page 3]
+Cui & Chen              Expires December 12, 2014               [Page 3]
 
 Internet-Draft       Unified v6 Transition Framework           June 2014
 
@@ -221,7 +221,7 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
 
 
 
-Cui & Chen              Expires December 11, 2014               [Page 4]
+Cui & Chen              Expires December 12, 2014               [Page 4]
 
 Internet-Draft       Unified v6 Transition Framework           June 2014
 
@@ -246,12 +246,12 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
 
    Both CPE Switch and BR Switch MUST support the IPv6 tunneling
    encapsulation/decapuslation function required in [RFC6333],
-   [I-D.ietf-softwire-lw4over6] and [I-D.ietf-softwire-map].  In IPv4/
-   IPv6 translation scenario such as NAT64, the switch MUST support
-   IPv4/IPv6 packet translation function.  These functions can be
-   implemented either as processing actions in flow forwarding rules, or
-   as standalone modules and provide a virtual interface to the switch
-   module.
+   [I-D.ietf-softwire-lw4over6] and [I-D.ietf-softwire-map].  To support
+   IPv4/IPv6 translation scenarios such as NAT64, the switch MUST
+   support IPv4/IPv6 packet translation function.  These functions can
+   be implemented either as processing actions in flow forwarding rules,
+   or as standalone modules and provide a virtual interface to the
+   switch module.
 
    In MAP-E/Lightweight 4over6 CPE and DS-Lite AFTR, NAT44 is required.
    In this framework, NAT44 can be simply supported by flow-based
@@ -264,6 +264,24 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
    function into switches, in this case passing the first packet of each
    5-tuple flow to controller is not needed.
 
+   Since MAP-E/Lightweight 4over6 requires port-based IPv4 address
+   sharing, there may be thousands of ports in the same IPv4 address
+   allocated to the same CPE.  To reduce the amount of forwarding rules
+   in BR Switch, when BR Switch matching an incoming packet, it SHOULD
+   support the port-set based matching as defined in in Section 5.1 of
+   [I-D.ietf-softwire-map].
+
+
+
+
+
+
+
+Cui & Chen              Expires December 12, 2014               [Page 5]
+
+Internet-Draft       Unified v6 Transition Framework           June 2014
+
+
 6.  Example: MAP-E/Lightweight 4over6 mode
 
    This section discusses how to run MAP-E/Lightweight 4over6 mode in
@@ -274,14 +292,6 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
    unknown packets to the Controller.
 
    The Controller manages the binding between IPv4 addresses and IPv6
-
-
-
-Cui & Chen              Expires December 11, 2014               [Page 5]
-
-Internet-Draft       Unified v6 Transition Framework           June 2014
-
-
    addresses.  When a new CPE Switch connects to the Controller, the
    Controller allocates a preserved or new IPv4 address and a port set
    for the CPE Switch, by install one or two (for bi-directory)
@@ -291,6 +301,13 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
    Switch and installs the forwarding rule in the CPE Switch.  Both
    forwarding rules in CPE Switch and BR Switch include IPv4-in-IPv6
    tunneling encapsulation/decapuslation action.
+
+   This framework supports mesh mode for Lightweight 4over6.  In mesh
+   mode, CPE Switch (CPE1) sends every initial packet of each 5-tuple
+   flow to Controller, and the Controller determines if the destination
+   IPv4 address and port correspond to another CPE (CPE2).  If so, the
+   destination IPv6 address of the encapsulation action for this flow is
+   set to CPE2's IPv6 address instead of BR Switch's IPv6 address.
 
 7.  Security Considerations
 
@@ -308,6 +325,18 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
 8.  IANA Considerations
 
    This document does not include an IANA request.
+
+
+
+
+
+
+
+
+Cui & Chen              Expires December 12, 2014               [Page 6]
+
+Internet-Draft       Unified v6 Transition Framework           June 2014
+
 
 9.  References
 
@@ -328,15 +357,8 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
    [I-D.ietf-softwire-lw4over6]
               Cui, Y., Qiong, Q., Boucadair, M., Tsou, T., Lee, Y., and
               I. Farrer, "Lightweight 4over6: An Extension to the DS-
-              Lite Architecture", draft-ietf-softwire-lw4over6-09 (work
+              Lite Architecture", draft-ietf-softwire-lw4over6-10 (work
               in progress), June 2014.
-
-
-
-Cui & Chen              Expires December 11, 2014               [Page 6]
-
-Internet-Draft       Unified v6 Transition Framework           June 2014
-
 
    [I-D.ietf-softwire-map]
               Troan, O., Dec, W., Li, X., Bao, C., Matsushima, S.,
@@ -359,6 +381,18 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
    [RFC7084]  Singh, H., Beebee, W., Donley, C., and B. Stark, "Basic
               Requirements for IPv6 Customer Edge Routers", RFC 7084,
               November 2013.
+
+
+
+
+
+
+
+
+Cui & Chen              Expires December 12, 2014               [Page 7]
+
+Internet-Draft       Unified v6 Transition Framework           June 2014
+
 
 Authors' Addresses
 
@@ -389,4 +423,26 @@ Authors' Addresses
 
 
 
-Cui & Chen              Expires December 11, 2014               [Page 7]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Cui & Chen              Expires December 12, 2014               [Page 8]
