@@ -192,7 +192,7 @@
     </t>
     
     <t>Both CPE Switch and BR Switch MUST support the IPv6 tunneling encapsulation/decapuslation function required in <xref target="RFC6333"></xref>,
-      <xref target="I-D.ietf-softwire-lw4over6"></xref> and <xref target="I-D.ietf-softwire-map"></xref>. In IPv4/IPv6 translation scenario such as NAT64,
+      <xref target="I-D.ietf-softwire-lw4over6"></xref> and <xref target="I-D.ietf-softwire-map"></xref>. To support IPv4/IPv6 translation scenarios such as NAT64,
       the switch MUST support IPv4/IPv6 packet translation function. These functions can be implemented either as processing actions in flow forwarding rules,
       or as standalone modules and provide a virtual interface to the switch module.
     </t>
@@ -215,6 +215,10 @@
   		 forwarding rule(s) in BR Switch. In case that CPE's NAT44 stated is maintained in Controller, when received an unknown packet from
   		 CPE Switch, the Controller pick one port from the port set of the CPE Switch and installs the forwarding rule in the CPE Switch.
   		 Both forwarding rules in CPE Switch and BR Switch include IPv4-in-IPv6 tunneling encapsulation/decapuslation action.
+    </t>
+    <t>This framework supports mesh mode for Lightweight 4over6. In mesh mode, CPE Switch (CPE1) sends every initial packet of each 5-tuple flow
+       to Controller, and the Controller determines if the destination IPv4 address and port correspond to another CPE (CPE2). If so,
+       the destination IPv6 address of the encapsulation action for this flow is set to CPE2's IPv6 address instead of BR Switch's IPv6 address.
     </t>
   </section>
  
