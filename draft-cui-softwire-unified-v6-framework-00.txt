@@ -80,7 +80,7 @@ Table of Contents
    3.  Framework Overview  . . . . . . . . . . . . . . . . . . . . .   3
    4.  Control Plane Behavior  . . . . . . . . . . . . . . . . . . .   4
    5.  Data Plane Behavior . . . . . . . . . . . . . . . . . . . . .   5
-     5.1.  Port-Set Based Matching . . . . . . . . . . . . . . . . .   5
+     5.1.  Port-Set Based Packet Matching  . . . . . . . . . . . . .   5
    6.  Example: MAP-E/Lightweight 4over6 mode  . . . . . . . . . . .   6
    7.  Security Considerations . . . . . . . . . . . . . . . . . . .   6
    8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   6
@@ -227,9 +227,9 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
 
 
    configuration are embeded into forwarding rules and provisioned to
-   CPE Switch through flow configuration.  The device configuration that
-   flow-based configuration doesn't support is still required, such as
-   DHCPv6 prefix delegation.
+   CPE Switch through flow configuration.  The device configurations
+   that flow-based configuration doesn't support are still required,
+   such as DHCPv6 prefix delegation.
 
 5.  Data Plane Behavior
 
@@ -264,7 +264,7 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
    function into switches, in this case passing the first packet of each
    5-tuple flow to controller is not needed.
 
-5.1.  Port-Set Based Matching
+5.1.  Port-Set Based Packet Matching
 
    Since MAP-E/Lightweight 4over6 requires port-based IPv4 address
    sharing, there may be thousands of ports in the same IPv4 address
@@ -288,19 +288,21 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
    this framework.  In this mode, The Customer LAN is an IPv4 or dual-
    stack network, and the ISP Network is an IPv6 network.  Initially the
    CPE Switch is configured with IPv6 address through DHCPv6 Prefix
-   Delegation and connects to the Controller.  The CPE Switch passes all
-   unknown packets to the Controller.
+   Delegation and connects to the Controller.  Then the CPE Switch
+   passes all unknown packets to the Controller.
 
    The Controller manages the binding between IPv4 addresses and IPv6
    addresses.  When a new CPE Switch connects to the Controller, the
-   Controller allocates a preserved or new IPv4 address and a port set
-   for the CPE Switch, by install one or two (for bi-directory)
-   forwarding rule(s) in BR Switch.  In case that CPE's NAT44 stated is
+   Controller allocates a preserved or a new IPv4 address and a port set
+   for the CPE Switch, by installing one or more (for bi-direction)
+   forwarding rule(s) in BR Switch.  In case that CPE's NAT44 state is
    maintained in Controller, when received an unknown packet from CPE
-   Switch, the Controller pick one port from the port set of the CPE
-   Switch and installs the forwarding rule in the CPE Switch.  Both
+   Switch, the Controller picks one port from the port set of the CPE
+   Switch and installs the forwarding rule in the CPE Switch, to rewrite
+   the source IPv4 address and port into public ones on the flow.  Both
    forwarding rules in CPE Switch and BR Switch include IPv4-in-IPv6
-   tunneling encapsulation/decapuslation action.
+   tunnel encapsulation/decapuslation action, taking the IPv6 address of
+   the opposite as an parameter.
 
    This framework supports mesh mode for Lightweight 4over6.  In mesh
    mode, CPE Switch (CPE1) sends every initial packet of each 5-tuple
@@ -325,8 +327,6 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
 8.  IANA Considerations
 
    This document does not include an IANA request.
-
-
 
 
 

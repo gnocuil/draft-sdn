@@ -175,8 +175,8 @@
     <t>Some transition mechanisms require provisioning parameters to CPE. For example, DS-Lite, MAP-E and Lightweight 4over6 use DHCPv6
      to provision IPv6 address of AFTR/BR to CPE. Lightweight 4over6 provision IPv6 address and ports to CPE. Since these parameters
      can be represented by flow forwarding rules, in this framework such DHCPv6 based provisioning is not required. Instead these softwire
-     configuration are embeded into forwarding rules and provisioned to CPE Switch through flow configuration. The device configuration that
-     flow-based configuration doesn't support is still required, such as DHCPv6 prefix delegation.
+     configuration are embeded into forwarding rules and provisioned to CPE Switch through flow configuration. The device configurations that
+     flow-based configuration doesn't support are still required, such as DHCPv6 prefix delegation.
      </t>
     
   </section>
@@ -203,7 +203,7 @@
        and the first packet of each flow is passed to the Controller. NAT44 can also be implemented as a standlone function into switches, in this case
        passing the first packet of each 5-tuple flow to controller is not needed.
     </t>
-    <section title="Port-Set Based Matching">
+    <section title="Port-Set Based Packet Matching">
     <t>Since MAP-E/Lightweight 4over6 requires port-based IPv4 address sharing, there may be thousands of ports in the same IPv4 address
        allocated to the same CPE. To reduce the amount of forwarding rules in BR Switch,
        when BR Switch matching an incoming packet, it MUST support the port-set based matching as defined in
@@ -216,13 +216,15 @@
   <section title="Example: MAP-E/Lightweight 4over6 mode">
     <t>This section discusses how to run MAP-E/Lightweight 4over6 mode in this framework. In this mode, The Customer LAN is an
     	 IPv4 or dual-stack network, and the ISP Network is an IPv6 network. Initially the CPE Switch is configured with IPv6 address
-    	 through DHCPv6 Prefix Delegation and connects to the Controller. The CPE Switch passes all unknown packets to the Controller.
+    	 through DHCPv6 Prefix Delegation and connects to the Controller. Then the CPE Switch passes all unknown packets to the Controller.
   	</t>
   	<t>The Controller manages the binding between IPv4 addresses and IPv6 addresses. When a new CPE Switch connects to the Controller,
-  		 the Controller allocates a preserved or new IPv4 address and a port set for the CPE Switch, by install one or two (for bi-directory)
-  		 forwarding rule(s) in BR Switch. In case that CPE's NAT44 stated is maintained in Controller, when received an unknown packet from
-  		 CPE Switch, the Controller pick one port from the port set of the CPE Switch and installs the forwarding rule in the CPE Switch.
-  		 Both forwarding rules in CPE Switch and BR Switch include IPv4-in-IPv6 tunneling encapsulation/decapuslation action.
+  		 the Controller allocates a preserved or a new IPv4 address and a port set for the CPE Switch, by installing one or more (for bi-direction)
+  		 forwarding rule(s) in BR Switch. In case that CPE's NAT44 state is maintained in Controller, when received an unknown packet from
+  		 CPE Switch, the Controller picks one port from the port set of the CPE Switch and installs the forwarding rule in the CPE Switch,
+  		 to rewrite the source IPv4 address and port into public ones on the flow.
+  		 Both forwarding rules in CPE Switch and BR Switch include IPv4-in-IPv6 tunnel encapsulation/decapuslation action, taking the IPv6
+  		 address of the opposite as an parameter.
     </t>
     <t>This framework supports mesh mode for Lightweight 4over6. In mesh mode, CPE Switch (CPE1) sends every initial packet of each 5-tuple flow
        to Controller, and the Controller determines if the destination IPv4 address and port correspond to another CPE (CPE2). If so,
