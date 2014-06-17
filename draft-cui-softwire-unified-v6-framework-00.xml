@@ -125,7 +125,7 @@
   <section anchor="Overview" title="Framework Overview">
     <t>The architecture of the proposed unified IPv6 transition framework is illustrated in Figure 1.
       The customer LAN connects the IPv6 ISP network through CPE Switch.
-      The ISP Network accesses the Internet through BR Switch. All devices in the ISP Network are not required
+      The ISP Network accesses the Internet through BR Switch. Devices in the ISP Network are not required
       to be managed by the Controller, thus the operator only needs to upgrade the CPEs and BRs.
     </t> 
     
@@ -140,8 +140,8 @@
 |              | +--------+ |               | +--------+ |              |
 | Customer LAN |_|  CPE   |_|      ISP      |_|   BR   |_|   Internet   |
 |              | | Switch | |    Network    | | Switch | |              |
-|              | +--------+ |               | +--------+ |______________|
-|______________|            |_______________|
+|______________| +--------+ |_______________| +--------+ |______________|
+                                              
                            
     ]]></artwork>
     <postamble> Figure 1  Architecture Overview </postamble>
@@ -203,12 +203,14 @@
        and the first packet of each flow is passed to the Controller. NAT44 can also be implemented as a standlone function into switches, in this case
        passing the first packet of each 5-tuple flow to controller is not needed.
     </t>
-    
+    <section title="Port-Set Based Matching">
     <t>Since MAP-E/Lightweight 4over6 requires port-based IPv4 address sharing, there may be thousands of ports in the same IPv4 address
        allocated to the same CPE. To reduce the amount of forwarding rules in BR Switch,
-       when BR Switch matching an incoming packet, it SHOULD support the port-set based matching as defined in
-       in Section 5.1 of <xref target="I-D.ietf-softwire-map"/>.
+       when BR Switch matching an incoming packet, it MUST support the port-set based matching as defined in
+       in Section 5.1 of <xref target="I-D.ietf-softwire-map"/>. If the BR Switch is an OpenFLow Switch,
+       it MUST support and accept match field masking for ports (see section 7.2.2.5 of <xref target="OpenFlow" />).
     </t>
+    </section>
   </section>
   
   <section title="Example: MAP-E/Lightweight 4over6 mode">
@@ -258,16 +260,15 @@
           <date />
         </front>
       </reference>
-      
+    &I-D.ietf-softwire-lw4over6;
+    &I-D.ietf-softwire-map;
   </references>
 
   <references title="Informative References">
-   &rfc7084;
-   &rfc6146;
-   &rfc6241;
-   &rfc6333;  
-    &I-D.ietf-softwire-lw4over6;
-   &I-D.ietf-softwire-map;
+    &rfc7084;
+    &rfc6146;
+    <!--&rfc6241;-->
+    &rfc6333;  
   </references>
 
 </back>
