@@ -58,13 +58,11 @@
   <date year="2014"/>
 
   <abstract>
-    <t>This document describes a unified IPv6 transition framework.
-      This framework makes use of the flow-based packet forwarding technology,
+    <t>This document describes a software defined networking (SDN) based unified IPv6 transition framework.
+       This framework makes use of the flow-based packet forwarding technology,
        which can simplify the implementation of both control plane and data plane operations of transition mechanisms.
-       The purpose of this work is to provide an integrated and flexible framework to implement and deploy the most popular translation and tunneling mechanisms,
-       such as MAP-E, Lightweight 4over6, DS-Lite, NAT64 etc.
-       This framework can benefit the industry by reducing the cost of implementation,
-       providing flexibility for deployment, and allowing transition mechanisms to coexist and cooperate in the common infrastructure.
+       The purpose of this work is to provide an integrated and flexible framework to implement and deploy transition mechanisms,
+       such as MAP-E, Lightweight 4over6, DS-Lite, etc.
     </t>     
   </abstract>
   
@@ -79,20 +77,24 @@
 
 <middle>
  <section anchor="Introduction" title="Introduction">
-    <t>Currently several translation and tunneling mechanisms have been proposed,
-      such as NAT64 <xref target="RFC6146"></xref>, DS-Lite <xref target="RFC6333"/>,
-      Lightweight 4over6 <xref target="I-D.ietf-softwire-lw4over6"/> and MAP-E <xref target="I-D.ietf-softwire-map"/>.
+    <t>Currently several IPv6 transition mechanisms have been proposed,
+      such as DS-Lite <xref target="RFC6333"/>, MAP-E <xref target="I-D.ietf-softwire-map"/>, and 
+      Lightweight 4over6 <xref target="I-D.ietf-softwire-lw4over6"/>.
       These mechanisms have been or being implemented by the industry.
-      However, the suitable transition mechanisms may change along the ISP's transition period.
-      It's complicated and a big cost to upgrade existing devices to support new mechanisms.
+      However, each of these transition mechanisms have some unique features in control or data plane behavior
+      such as IP provisioning, so the mechanisms require different dedicated implementations on both CPE and BR side and 
+      it's complicated and a big cost to upgrade existing devices to support new mechanisms.
     </t>
     
-    <t>This document describes a unified IPv6 transition framework.
+    <t>This document describes a SDN-based IPv6 transition framework.
       This framework adopts flow-based packet forwarding technology on transition devices,
       which can simplify the implementation of both control plane and data plane operations of transition mechanisms.
-      The forwarding rules of transition devices are controlled by centrallized Controller and can be changed easily,
-      thus this framework can cover all existing transition scenarios, e.g. IPv4 over IPv6 hub and spoke model that MAP-E or DS-Lite does.
-      This framework can benefit the industry by reducing the cost of implementing and deploying transition mechanisms.
+      A centralized Controller is added into the network to control the forwarding rules of both CPE and BR,
+      leaving other devices in ISP network between CPE and BR as traditional devices.
+      The forwarding rules of transition devices can be changed easily by changing network applications on the Controller,
+      thus this framework can implement transition scenarios easily, e.g. IPv4 over IPv6 hub and spoke model that Lightweight 4over6 does.
+      Both CPE and BR can be implemented by standardized SDN switches thus no dedicated devices are needed, so
+      it can reduce the cost of deploying new mechanisms for customer networks.
     </t>  
   
   </section>
@@ -102,21 +104,23 @@
       
     <t><list style="hanging" hangIndent="25">
        <t hangText="Customer Premises Equipment Switch (CPE Switch):">A dual-stack L3 switch that performs the flow-based packet forwarding function.
+       	  It implements the OpenFlow protocol <xref target="OpenFlow" />
           It can be the home gateway or BNG.
        </t>
 
        <t hangText="Border Relay Switch (BR Switch):">A dual-stack L3 switch that performs the flow-based packet forwarding function.
-          It is on the boarder of the ISP network and IPv4/ IPv6 Internet.
+       	  It implements the OpenFlow protocol <xref target="OpenFlow" />
+          It is on the boarder of the ISP network and IPv4/ IPv6 Internet. 
        </t>
        
-       <t hangText="Controller:">A centrallized manager that controls both CPE Switch and BR Switch.
-          Controller can be a single device or a cluster of devices.
+       <t hangText="Controller:">A centralized manager that controls both CPE Switch and BR Switch.
+          The Controller is treated as a logical device that can be a single or multiple physical devices.
        </t>
           
        <t hangText="Flow-based Packet Forwarding:">A function that forwards packets according to the forwarding rules specified by a flow table.
           A typical forwarding rule includes a match field and a action set.
-          The match field specifies a certain flow, which is a set of packets that share some common features (e.g. same source and destionation address).
-          The action set specifies the actions that should act on the certain flow (e.g. forward, encapsulate, or IP translate).
+          The match field specifies a certain flow, which is a set of packets that share some common features (e.g. same source and destination address).
+          The action set specifies the actions that should act on the certain flow (e.g. forward a packet, encapsulate or decapsulate a packet).
        </t>
     </list></t>
   
@@ -138,8 +142,8 @@
                      |                             |
  ______________      v       _______________       v      ______________
 |              | +--------+ |               | +--------+ |              |
-| Customer LAN |_|  CPE   |_|      ISP      |_|   BR   |_|   Internet   |
-|              | | Switch | |    Network    | | Switch | |              |
+| Customer LAN |_|  CPE   |_|    ISP IPv6   |_|   BR   |_|    IPv4      |
+|              | | Switch | |    Network    | | Switch | |   Internet   |
 |______________| +--------+ |_______________| +--------+ |______________|
                                               
                            
@@ -148,75 +152,87 @@
     </figure>
     
     <t>Both CPE Switch and BR Switch perform flow-based forwarding, and are managed by the Controller.
-    	 Since CPE Switch can work as a gateway of the customer network, it also needs to support
-    	 traditional CPE function, such as DHCPv4 server and be compatible with <xref target="RFC7084"/>.
+    	 Since CPE Switch can work as the gateway of customer network, it also needs to support
+    	 traditional CPE functions, such as be compatible with <xref target="RFC7084"/>.
     </t>
     
     <t>Controller is responsible for controlling the forwarding behavior of both CPE Switch and BR Switch.
-      Controller can be an individual device or a cluster of devices.
+      Controller can be an individual or a cluster of physical devices.
       The Controller configures the forwarding rules in the flow tables maintained by the CPE Switch and BR Switch
-      according to the packets passed from Switches.
+      according to the packets passed from Switches. There can also be separate physical controllers at CPE side and BR side,
+      but both controllers needs to share their network state so they can work as a single logical controller. The state sharing
+      method is out of the scope of this document.
     </t>
     
-    <t>Controller communicates with Switch using protocols that is able to carry flow information and flow table configuration,
-      such as Openflow <xref target="OpenFlow" />.
+    <t>Controller communicates with Switch using protocols that is able to carry flow information and flow table configuration.
+    	Currently we suggest and choose Openflow <xref target="OpenFlow" /> as the best approach, however some changes are
+    	proposed to support IPv6 tunneling and port set based forwarding.
     </t>
     
   </section>
   
   <section anchor="Control" title="Control Plane Behavior">
     <t>The Controller configures both CPE Switch and BR Switch through flow configuration. The switches are configured or pre-installed with
-      default forwarding policy that forwards all unknown flows to the controller. The controller then installs a forwarding rule for the
+      default forwarding policy that forwards all unknown flows to the controller. The controller then installs forwarding rules for the
       specific flow into the switch. All remaining packets of the same flow are processed based on this rule and will not be forwarded to
-      the Controller. The definition of a flow depends on the forwording policy. For example, in MAP-E or Lightweight 4over6 scenario, the
-      BR Switch treats all traffic from the same sender as a single flow.
+      the Controller. The definition of a flow depends on the forwarding policy. For example, in MAP-E or Lightweight 4over6 scenario, the
+      BR Switch treats all traffic from the same CPE as a single flow.
     </t>
     
     <t>Some transition mechanisms require provisioning parameters to CPE. For example, DS-Lite, MAP-E and Lightweight 4over6 use DHCPv6
-     to provision IPv6 address of AFTR/BR to CPE. Lightweight 4over6 provision IPv6 address and ports to CPE. Since these parameters
-     can be represented by flow forwarding rules, in this framework such DHCPv6 based provisioning is not required. Instead these softwire
-     configuration are embeded into forwarding rules and provisioned to CPE Switch through flow configuration. The device configurations that
-     flow-based configuration doesn't support are still required, such as DHCPv6 prefix delegation.
+     to provision IPv6 address of AFTR/BR to CPE. Lightweight 4over6 and MAP-E provision IPv4 address and port set to CPE. Since these parameters
+     can be represented by flow forwarding rules, in this framework such DHCPv6 based softwire provisioning is not required. Instead these softwire
+     configuration are embedded into forwarding rules and provisioned to CPE Switch through flow configuration, e.g. the IPv4 address of the 
+     CPE can be represented as the value of set-field actions.
+     </t>
+     
+     <t>The connection between the switches and the controller SHOULD be through IPv6. In order to build the IPv6 based connection, the 
+     	switches MUST be configured with an IPv6 address and the IPv6 address of the Controller. Since the CPE side requires automatic configuration,
+     	DHCPv6 is RECOMMENDED for the CPE Switches to get its IPv6 address or prefix, and the controller address.
      </t>
     
   </section>
   
   <section anchor="Data" title="Data Plane Behavior">
-    <t>When receiving an incoming packet that doesn't have a match in the flow table (the intial packet of a new flow),
-      CPE Switch and BR Switch MUST forward the packet to Controller.
-      Controller MUST determine how to proceed the flow (e.g. IP tunneling encapsluaton/decapuslutaion, IP translation, etc.),
+    <t>When received an incoming packet which is the initial packet of an unknown flow,
+      CPE Switch and BR Switch MUST pass the packet to Controller to ask for the forwarding rule.
+      Controller determines how to proceed the flow,
       and interpret the process into a set of forwarding rule configurations.
-      Controller then installs these configurations to CPE Swtich and BR Switch.
+      Controller then installs these configurations to CPE Swtich and/or BR Switch.
       When receiving the subsequent packets of the flow, CPE Switch and BR Switch will apply the same actions to them,
       according to the forwarding rules in the flow table.
     </t>
     
     <t>Both CPE Switch and BR Switch MUST support the IPv6 tunneling encapsulation/decapuslation function required in <xref target="RFC6333"></xref>,
-      <xref target="I-D.ietf-softwire-lw4over6"></xref> and <xref target="I-D.ietf-softwire-map"></xref>. To support IPv4/IPv6 translation scenarios such as NAT64,
-      the switch MUST support IPv4/IPv6 packet translation function. These functions can be implemented either as processing actions in flow forwarding rules,
-      or as standalone modules and provide a virtual interface to the switch module.
+      <xref target="I-D.ietf-softwire-lw4over6"></xref> and <xref target="I-D.ietf-softwire-map"></xref>. 
+      IPv4-in-IPv6 tunnling SHOULD be implemented by Switches. When it is not supported, other tunneling format such as GRE tunnel can be used.
     </t>
     
-    <t>In MAP-E/Lightweight 4over6 CPE and DS-Lite AFTR, NAT44 is required. In this framework, NAT44 can be simply supported by flow-based forwarding rules.
-       Since typical flow-based forwarding mechanism support procotol header modification, e.g. set-field action in OpenFlow,
-       NAT44 can be implemented as modification of source/destination IPv4 addresseses and ports. In this case, the flows are identified by 5-tuples
-       and the first packet of each flow is passed to the Controller. NAT44 can also be implemented as a standlone function into switches, in this case
-       passing the first packet of each 5-tuple flow to controller is not needed.
+    <t>In MAP-E/Lightweight 4over6 CPE, NAT44 is required. In this framework, NAT44 can be simply supported by flow-based forwarding rules.
+       Since protocol header modification is supported by Switches (i.e. set-field action in OpenFlow),
+       NAT44 can be implemented as modification of source/destination IPv4 addresses and ports. As an example,
+       for the upstreaming traffic on CPE Switch, the Switch asks for the forwarding rule of each flow identified by (source IPv4 address, source port),
+       and the Controller allocates an address and a port for each flow and orders the Switch to rewrite the source IPv4 address and port of the
+       upstreaming flow, and the destination IPv4 address and port of the corresponding downstreaming flow.
     </t>
+    
     <section title="Port-Set Based Packet Matching">
     <t>Since MAP-E/Lightweight 4over6 requires port-based IPv4 address sharing, there may be thousands of ports in the same IPv4 address
        allocated to the same CPE. To reduce the amount of forwarding rules in BR Switch,
        when BR Switch matching an incoming packet, it MUST support the port-set based matching as defined in
-       in Section 5.1 of <xref target="I-D.ietf-softwire-map"/>. If the BR Switch is an OpenFLow Switch,
-       it MUST support and accept match field masking for ports (see section 7.2.2.5 of <xref target="OpenFlow" />).
+       in Section 5.1 of <xref target="I-D.ietf-softwire-map"/>. The BR Switch MUST support and accept match field masking for ports
+       (see section 7.2.2.5 of <xref target="OpenFlow" />). For the PSID usage, the PSID bits (k bits) in the port mask are filled with "1"s,
+       and the remaining bits (a+m bits) are filled with "0"s.
     </t>
     </section>
   </section>
   
-  <section title="Example: MAP-E/Lightweight 4over6 mode">
-    <t>This section discusses how to run MAP-E/Lightweight 4over6 mode in this framework. In this mode, The Customer LAN is an
+  <section title="Example: 4over6 mode">
+    <t>This section describes an example of how to run 4over6 mode in this framework. The network behavior is similar to Lightweight 4over6,
+    	 however the DHCPv6-based IPv4 address and PSID provisioning is not needed.
+    	 In this mode, The Customer LAN is an
     	 IPv4 or dual-stack network, and the ISP Network is an IPv6 network. Initially the CPE Switch is configured with IPv6 address
-    	 through DHCPv6 Prefix Delegation and connects to the Controller. Then the CPE Switch passes all unknown packets to the Controller.
+    	 through DHCPv6 Prefix Delegation and connects to the Controller through OpenFLow. Then the CPE Switch passes all unknown packets to the Controller.
   	</t>
   	<t>The Controller manages the binding between IPv4 addresses and IPv6 addresses. When a new CPE Switch connects to the Controller,
   		 the Controller allocates a preserved or a new IPv4 address and a port set for the CPE Switch, by installing one or more (for bi-direction)
@@ -272,6 +288,9 @@
     <!--&rfc6241;-->
     &rfc6333;  
   </references>
+  
+  <section title="Example of 4over6 mode">
+  </section>
 
 </back>
 </rfc>
