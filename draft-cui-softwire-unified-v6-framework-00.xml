@@ -198,21 +198,21 @@
       CPE Switch and BR Switch MUST pass the packet to Controller to ask for the forwarding rule.
       Controller determines how to proceed the flow,
       and interpret the process into a set of forwarding rule configurations.
-      Controller then installs these configurations to CPE Swtich and/or BR Switch.
+      Controller then installs these configurations to CPE Switch and/or BR Switch.
       When receiving the subsequent packets of the flow, CPE Switch and BR Switch will apply the same actions to them,
       according to the forwarding rules in the flow table.
     </t>
     
     <t>Both CPE Switch and BR Switch MUST support the IPv6 tunneling encapsulation/decapuslation function required in <xref target="RFC6333" />,
       <xref target="I-D.ietf-softwire-lw4over6"/> and <xref target="I-D.ietf-softwire-map"/> as actions to the incoming IPv4 packets.
-      IPv4-in-IPv6 tunnling SHOULD be implemented by Switches. When it is not supported, other tunneling format such as GRE tunnel can be used.
+      IPv4-in-IPv6 tunneling SHOULD be implemented by Switches. When it is not supported, other tunneling format such as GRE tunnel can be used.
       The encapsulation action is specified with two parameters: source and destination IPv6 address.
     </t>
     
     <section title="Controller-based NAT44">
     <t>In MAP-E/Lightweight 4over6 CPE, NAT44 is required. In this framework, NAT44 can be simply supported by flow-based forwarding rules.
        Since protocol header modification is supported by Switches (i.e. set-field action in OpenFlow),
-       NAT44 can be implemented as modification of source/destination IPv4 addresse and port fields. As an example,
+       NAT44 can be implemented as modification of source/destination IPv4 addresses and port fields. As an example,
        for the upstreaming traffic on CPE Switch, the Switch asks for the forwarding rule of each flow identified by (source IPv4 address, source port),
        and the Controller allocates an address and a port for each flow and orders the Switch to rewrite the source IPv4 address and port of the
        upstreaming flow, and the destination IPv4 address and port of the corresponding downstreaming flow. The NAT44 state is maintained by the Controller.
@@ -251,7 +251,7 @@
     </t>
     
     <section title="Forwarding Rules">
-    <t>A CPE Switch is configred with following rules:
+    <t>A CPE Switch is configured with following rules:
       <list style="empty">
     	  <t>Decapsulation rule: For all IPv6 traffic from ISP network with the protocol type 4, pop the IPv6 tunnel header.</t>
     	  <t>NAT rule: For each flow received from LAN network and identified by (source IPv4 address, source port): rewrite source IPv4 address and source port
@@ -277,11 +277,22 @@
     
     <section title="Mesh Mode">
 	    <t>This framework can support mesh mode for Lightweight 4over6. In mesh mode, if the (destination IPv4 address, destination port)
-	    	 of a LAN side incoming flow on a CPE Switch (CPE1) belongs to another CPE Switch (CPE2), the tunnel destinaiton address of
+	    	 of a LAN side incoming flow on a CPE Switch (CPE1) belongs to another CPE Switch (CPE2), the tunnel destination address of
 	    	 the encapsulation action for this flow is set to CPE2's IPv6 address directly. The priority of mesh mode encapsulation rule
 	    	 is higher than default encapsulation rule.
 	    </t>
     </section>    
+  </section>
+  
+  <section title="NAT Consideration">
+  	<t>Section 5.1 describes how Controller-based NAT44 works. In some cases that only NAT44 but no other applications are performed
+  		 for TCP/UDP flows, passing the initial packet of each flow to Controller may be inefficient. In this case, the framework proposed in this document
+  		 allows the switches to have
+  		 a dedicated NAT module that handles NAT44 states and rewrites packets. The NAT module works as a virtual interface to the switch,
+  		 and the switch perform NAT44 action to packets by forwarding packets to the NAT interface. The NAT44 module needs to be configured with 
+  		 the public IPv4 address and/or port set. In case a switch has a dedicated NAT44 module, the Controller may still want to handle the forwarding rules of part of the flows,
+  		to provide better quality for some services.
+  	</t>
   </section>
  
   <section anchor="Security" title="Security Considerations">

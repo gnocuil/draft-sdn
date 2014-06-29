@@ -79,11 +79,12 @@ Table of Contents
    6.  Example: 4over6 Mode  . . . . . . . . . . . . . . . . . . . .   6
      6.1.  Forwarding Rules  . . . . . . . . . . . . . . . . . . . .   7
      6.2.  Mesh Mode . . . . . . . . . . . . . . . . . . . . . . . .   7
-   7.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
-   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   8
-   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   8
-     9.1.  Normative References  . . . . . . . . . . . . . . . . . .   8
-     9.2.  Informative References  . . . . . . . . . . . . . . . . .   8
+   7.  NAT Consideration . . . . . . . . . . . . . . . . . . . . . .   8
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
+   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   8
+   10. References  . . . . . . . . . . . . . . . . . . . . . . . . .   8
+     10.1.  Normative References . . . . . . . . . . . . . . . . . .   8
+     10.2.  Informative References . . . . . . . . . . . . . . . . .   9
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   9
 
 1.  Introduction
@@ -105,7 +106,6 @@ Table of Contents
    centralized Controller is added into the network to control the
    forwarding rules of both CPE and BR, leaving other devices in ISP
    network between CPE and BR as traditional devices.  The forwarding
-   rules of transition devices can be changed easily by changing network
 
 
 
@@ -114,6 +114,7 @@ Cui & Chen              Expires December 31, 2014               [Page 2]
 Internet-Draft       Unified v6 Transition Framework           June 2014
 
 
+   rules of transition devices can be changed easily by changing network
    applications on the Controller, thus this framework can implement
    transition scenarios easily, e.g.  IPv4 over IPv6 hub and spoke model
    that Lightweight 4over6 does.  Both CPE and BR can be implemented by
@@ -161,7 +162,6 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
    network through CPE Switch.  The ISP Network accesses the Internet
    through BR Switch.  Devices in the ISP Network are not required to be
    managed by the Controller, thus the operator only needs to upgrade
-   the CPEs and BRs.
 
 
 
@@ -169,6 +169,8 @@ Cui & Chen              Expires December 31, 2014               [Page 3]
 
 Internet-Draft       Unified v6 Transition Framework           June 2014
 
+
+   the CPEs and BRs.
 
                             +---------------+
                       ______|  Controller   |______
@@ -216,8 +218,6 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
    flow are processed based on this rule and will not be forwarded to
    the Controller.  The definition of a flow depends on the forwarding
    policy.  For example, in MAP-E or Lightweight 4over6 scenario, the BR
-   Switch treats all traffic from the same CPE as a single flow.
-
 
 
 
@@ -225,6 +225,8 @@ Cui & Chen              Expires December 31, 2014               [Page 4]
 
 Internet-Draft       Unified v6 Transition Framework           June 2014
 
+
+   Switch treats all traffic from the same CPE as a single flow.
 
    Some transition mechanisms require provisioning parameters to CPE.
    For example, DS-Lite, MAP-E and Lightweight 4over6 use DHCPv6 to
@@ -251,7 +253,7 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
    Controller to ask for the forwarding rule.  Controller determines how
    to proceed the flow, and interpret the process into a set of
    forwarding rule configurations.  Controller then installs these
-   configurations to CPE Swtich and/or BR Switch.  When receiving the
+   configurations to CPE Switch and/or BR Switch.  When receiving the
    subsequent packets of the flow, CPE Switch and BR Switch will apply
    the same actions to them, according to the forwarding rules in the
    flow table.
@@ -259,7 +261,7 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
    Both CPE Switch and BR Switch MUST support the IPv6 tunneling
    encapsulation/decapuslation function required in [RFC6333],
    [I-D.ietf-softwire-lw4over6] and [I-D.ietf-softwire-map] as actions
-   to the incoming IPv4 packets.  IPv4-in-IPv6 tunnling SHOULD be
+   to the incoming IPv4 packets.  IPv4-in-IPv6 tunneling SHOULD be
    implemented by Switches.  When it is not supported, other tunneling
    format such as GRE tunnel can be used.  The encapsulation action is
    specified with two parameters: source and destination IPv6 address.
@@ -270,10 +272,8 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
    framework, NAT44 can be simply supported by flow-based forwarding
    rules.  Since protocol header modification is supported by Switches
    (i.e. set-field action in OpenFlow), NAT44 can be implemented as
-   modification of source/destination IPv4 addresse and port fields.  As
-   an example, for the upstreaming traffic on CPE Switch, the Switch
-   asks for the forwarding rule of each flow identified by (source IPv4
-   address, source port), and the Controller allocates an address and a
+   modification of source/destination IPv4 addresses and port fields.
+   As an example, for the upstreaming traffic on CPE Switch, the Switch
 
 
 
@@ -282,6 +282,8 @@ Cui & Chen              Expires December 31, 2014               [Page 5]
 Internet-Draft       Unified v6 Transition Framework           June 2014
 
 
+   asks for the forwarding rule of each flow identified by (source IPv4
+   address, source port), and the Controller allocates an address and a
    port for each flow and orders the Switch to rewrite the source IPv4
    address and port of the upstreaming flow, and the destination IPv4
    address and port of the corresponding downstreaming flow.  The NAT44
@@ -331,8 +333,6 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
 
 
 
-
-
 Cui & Chen              Expires December 31, 2014               [Page 6]
 
 Internet-Draft       Unified v6 Transition Framework           June 2014
@@ -340,7 +340,7 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
 
 6.1.  Forwarding Rules
 
-   A CPE Switch is configred with following rules:
+   A CPE Switch is configured with following rules:
 
       Decapsulation rule: For all IPv6 traffic from ISP network with the
       protocol type 4, pop the IPv6 tunnel header.
@@ -379,7 +379,7 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
    This framework can support mesh mode for Lightweight 4over6.  In mesh
    mode, if the (destination IPv4 address, destination port) of a LAN
    side incoming flow on a CPE Switch (CPE1) belongs to another CPE
-   Switch (CPE2), the tunnel destinaiton address of the encapsulation
+   Switch (CPE2), the tunnel destination address of the encapsulation
    action for this flow is set to CPE2's IPv6 address directly.  The
    priority of mesh mode encapsulation rule is higher than default
    encapsulation rule.
@@ -394,7 +394,22 @@ Cui & Chen              Expires December 31, 2014               [Page 7]
 Internet-Draft       Unified v6 Transition Framework           June 2014
 
 
-7.  Security Considerations
+7.  NAT Consideration
+
+   Section 5.1 describes how Controller-based NAT44 works.  In some
+   cases that only NAT44 but no other applications are performed for
+   TCP/UDP flows, passing the initial packet of each flow to Controller
+   may be inefficient.  In this case, the framework proposed in this
+   document allows the switches to have a dedicated NAT module that
+   handles NAT44 states and rewrites packets.  The NAT module works as a
+   virtual interface to the switch, and the switch perform NAT44 action
+   to packets by forwarding packets to the NAT interface.  The NAT44
+   module needs to be configured with the public IPv4 address and/or
+   port set.  In case a switch has a dedicated NAT44 module, the
+   Controller may still want to handle the forwarding rules of part of
+   the flows, to provide better quality for some services.
+
+8.  Security Considerations
 
    As Switch should always send unknown flows to Controller, the link
    between Switch and Controller might be vulnerable to a typical DoS
@@ -407,13 +422,13 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
 
    Further security consideration is TBD.
 
-8.  IANA Considerations
+9.  IANA Considerations
 
    This document does not include an IANA request.
 
-9.  References
+10.  References
 
-9.1.  Normative References
+10.1.  Normative References
 
    [I-D.ietf-softwire-lw4over6]
               Cui, Y., Qiong, Q., Boucadair, M., Tsou, T., Lee, Y., and
@@ -427,6 +442,14 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
               with Encapsulation (MAP)", draft-ietf-softwire-map-10
               (work in progress), January 2014.
 
+
+
+
+Cui & Chen              Expires December 31, 2014               [Page 8]
+
+Internet-Draft       Unified v6 Transition Framework           June 2014
+
+
    [OpenFlow]
               Open Networking Foundation, "OpenFlow Switch Specification
               1.4.0",
@@ -437,18 +460,11 @@ Internet-Draft       Unified v6 Transition Framework           June 2014
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119, March 1997.
 
-9.2.  Informative References
+10.2.  Informative References
 
    [RFC6333]  Durand, A., Droms, R., Woodyatt, J., and Y. Lee, "Dual-
               Stack Lite Broadband Deployments Following IPv4
               Exhaustion", RFC 6333, August 2011.
-
-
-
-Cui & Chen              Expires December 31, 2014               [Page 8]
-
-Internet-Draft       Unified v6 Transition Framework           June 2014
-
 
    [RFC7084]  Singh, H., Beebee, W., Donley, C., and B. Stark, "Basic
               Requirements for IPv6 Customer Edge Routers", RFC 7084,
@@ -472,22 +488,6 @@ Authors' Addresses
 
    Phone: +86-10-6278-5822
    Email: chenycmx@gmail.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
