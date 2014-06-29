@@ -19,7 +19,7 @@
     <!ENTITY I-D.ietf-softwire-map SYSTEM 'http://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-softwire-map.xml'>
 ]>
 
-<rfc category="std" docName="draft-cui-softwire-unified-v6-framework-01" ipr="trust200902">
+<rfc category="std" docName="draft-cui-softwire-unified-v6-framework-00" ipr="trust200902">
     
 <front>
   
@@ -62,7 +62,7 @@
        This framework makes use of the flow-based packet forwarding technology,
        which can simplify the implementation of both control plane and data plane operations of transition mechanisms.
        The purpose of this work is to provide an integrated and flexible framework to implement and deploy transition mechanisms,
-       such as MAP-E, Lightweight 4over6, DS-Lite, etc.
+       such as MAP-E, Lightweight 4over6, etc.
     </t>     
   </abstract>
   
@@ -188,7 +188,7 @@
      
      <t>The connection between the switches and the controller SHOULD be through IPv6. In order to build the IPv6 based connection, the 
      	switches MUST be configured with an IPv6 address and the IPv6 address of the Controller. Since the CPE side requires automatic configuration,
-     	DHCPv6 is RECOMMENDED for the CPE Switches to get its IPv6 address or prefix, and the controller address.
+     	DHCPv6 is RECOMMENDED for the CPE Switch to get its IPv6 address or prefix, and the controller address.
      </t>
     
   </section>
@@ -203,49 +203,85 @@
       according to the forwarding rules in the flow table.
     </t>
     
-    <t>Both CPE Switch and BR Switch MUST support the IPv6 tunneling encapsulation/decapuslation function required in <xref target="RFC6333"></xref>,
-      <xref target="I-D.ietf-softwire-lw4over6"></xref> and <xref target="I-D.ietf-softwire-map"></xref>. 
+    <t>Both CPE Switch and BR Switch MUST support the IPv6 tunneling encapsulation/decapuslation function required in <xref target="RFC6333" />,
+      <xref target="I-D.ietf-softwire-lw4over6"/> and <xref target="I-D.ietf-softwire-map"/> as actions to the incoming IPv4 packets.
       IPv4-in-IPv6 tunnling SHOULD be implemented by Switches. When it is not supported, other tunneling format such as GRE tunnel can be used.
+      The encapsulation action is specified with two parameters: source and destination IPv6 address.
     </t>
     
+    <section title="Controller-based NAT44">
     <t>In MAP-E/Lightweight 4over6 CPE, NAT44 is required. In this framework, NAT44 can be simply supported by flow-based forwarding rules.
        Since protocol header modification is supported by Switches (i.e. set-field action in OpenFlow),
-       NAT44 can be implemented as modification of source/destination IPv4 addresses and ports. As an example,
+       NAT44 can be implemented as modification of source/destination IPv4 addresse and port fields. As an example,
        for the upstreaming traffic on CPE Switch, the Switch asks for the forwarding rule of each flow identified by (source IPv4 address, source port),
        and the Controller allocates an address and a port for each flow and orders the Switch to rewrite the source IPv4 address and port of the
-       upstreaming flow, and the destination IPv4 address and port of the corresponding downstreaming flow.
+       upstreaming flow, and the destination IPv4 address and port of the corresponding downstreaming flow. The NAT44 state is maintained by the Controller.
     </t>
+    </section>
     
     <section title="Port-Set Based Packet Matching">
-    <t>Since MAP-E/Lightweight 4over6 requires port-based IPv4 address sharing, there may be thousands of ports in the same IPv4 address
+    <t>Since MAP-E/Lightweight 4over6 requires port-based IPv4 address sharing, there may be thousands of ports of the same IPv4 address
        allocated to the same CPE. To reduce the amount of forwarding rules in BR Switch,
-       when BR Switch matching an incoming packet, it MUST support the port-set based matching as defined in
-       in Section 5.1 of <xref target="I-D.ietf-softwire-map"/>. The BR Switch MUST support and accept match field masking for ports
+       when BR Switch matching an incoming packet, it SHOULD support the port-set based matching as defined in
+       in Section 5.1 of <xref target="I-D.ietf-softwire-map"/>. The BR Switch SHOULD support and accept match field masking for ports
        (see section 7.2.2.5 of <xref target="OpenFlow" />). For the PSID usage, the PSID bits (k bits) in the port mask are filled with "1"s,
        and the remaining bits (a+m bits) are filled with "0"s.
     </t>
     </section>
   </section>
   
-  <section title="Example: 4over6 mode">
-    <t>This section describes an example of how to run 4over6 mode in this framework. The network behavior is similar to Lightweight 4over6,
-    	 however the DHCPv6-based IPv4 address and PSID provisioning is not needed.
+  <section title="Example: 4over6 Mode">
+    <t>This section describes an example of running IPv4 over IPv6 tunneling mode in this framework. The network behavior is similar to Lightweight 4over6,
+    	 however the DHCPv6-based IPv4 address and PSID provisioning for lwB4 is not needed.
     	 In this mode, The Customer LAN is an
-    	 IPv4 or dual-stack network, and the ISP Network is an IPv6 network. Initially the CPE Switch is configured with IPv6 address
-    	 through DHCPv6 Prefix Delegation and connects to the Controller through OpenFLow. Then the CPE Switch passes all unknown packets to the Controller.
+    	 IPv4 or dual-stack network, and the ISP Network is an IPv6 network. Initially the CPE Switch is configured with IPv6 prefix
+    	 through DHCPv6 Prefix Delegation and connects to the Controller through OpenFLow. Then the CPE Switch is ordered to pass all unknown packets to the Controller.
   	</t>
   	<t>The Controller manages the binding between IPv4 addresses and IPv6 addresses. When a new CPE Switch connects to the Controller,
-  		 the Controller allocates a preserved or a new IPv4 address and a port set for the CPE Switch, by installing one or more (for bi-direction)
-  		 forwarding rule(s) in BR Switch. In case that CPE's NAT44 state is maintained in Controller, when received an unknown packet from
+  		 the Controller allocates an IPv4 address and a port set for the CPE Switch, and installs per-subscriber scale
+  		 forwarding rule(s) in BR Switch. To work as MAP-E mode, the IPv4 address and port set are calculated from the CPE's IPv6 prefix.
+  		 To work as Lightweight 4over6 mode, the IPv4 address and port set are allocated dynamically.
+    </t>
+    <t>
+  		 In case that CPE's NAT44 state is maintained in Controller, when received an unknown packet from
   		 CPE Switch, the Controller picks one port from the port set of the CPE Switch and installs the forwarding rule in the CPE Switch,
   		 to rewrite the source IPv4 address and port into public ones on the flow.
   		 Both forwarding rules in CPE Switch and BR Switch include IPv4-in-IPv6 tunnel encapsulation/decapuslation action, taking the IPv6
   		 address of the opposite as an parameter.
     </t>
-    <t>This framework supports mesh mode for Lightweight 4over6. In mesh mode, CPE Switch (CPE1) sends every initial packet of each 5-tuple flow
-       to Controller, and the Controller determines if the destination IPv4 address and port correspond to another CPE (CPE2). If so,
-       the destination IPv6 address of the encapsulation action for this flow is set to CPE2's IPv6 address instead of BR Switch's IPv6 address.
+    
+    <section title="Forwarding Rules">
+    <t>A CPE Switch is configred with following rules:
+      <list style="empty">
+    	  <t>Decapsulation rule: For all IPv6 traffic from ISP network with the protocol type 4, pop the IPv6 tunnel header.</t>
+    	  <t>NAT rule: For each flow received from LAN network and identified by (source IPv4 address, source port): rewrite source IPv4 address and source port
+    	  to public values specified by Controller; also rewrite destination IPv4 address and port of the corresponding opposite flow.</t>
+    	  <t>Encapsulation rule: For all IPv4 traffic from LAN network: push a IPv6 tunnel header (protocol type 4), of which the source and destination address are specified by the Controller.
+    	     The tunnel source address is one of the CPE Switch's addresses chosen by the Controller. The tunnel destination address is the BR Switch's address.
+    	  </t>
+    	</list>
     </t>
+    
+    <t>A BR Switch is configured with following rules:
+      <list style="empty">
+    	  <t>Decapsulation rule: For all IPv6 traffic from ISP network with the protocol type 4, pop the IPv6 tunnel header and forward to Internet.</t>
+    	  <t>Encapsulation rule: For each flow received from Internet side and identified by (destination IPv4 address, destination port set):
+    	  	 push a IPv6 tunnel header (protocol type 4), of which the source and destination address are specified by the Controller.
+    	  	 The tunnel source address is the BR Switch's address. The tunnel destination address is one of the CPE Switch's address,
+    	  	 which MUST be the same address used in CPE Switch's forwarding rule. By masking a port set mask when doing port matching,
+    	  	 one matching rule can match a set of ports.
+    	  </t>
+    	</list>
+    </t>
+    </section>
+    
+    <section title="Mesh Mode">
+	    <t>This framework can support mesh mode for Lightweight 4over6. In mesh mode, if the (destination IPv4 address, destination port)
+	    	 of a LAN side incoming flow on a CPE Switch (CPE1) belongs to another CPE Switch (CPE2), the tunnel destinaiton address of
+	    	 the encapsulation action for this flow is set to CPE2's IPv6 address directly. The priority of mesh mode encapsulation rule
+	    	 is higher than default encapsulation rule.
+	    </t>
+    </section>    
   </section>
  
   <section anchor="Security" title="Security Considerations">
@@ -284,13 +320,10 @@
 
   <references title="Informative References">
     &rfc7084;
-    &rfc6146;
+    <!--&rfc6146;-->
     <!--&rfc6241;-->
     &rfc6333;  
   </references>
-  
-  <section title="Example of 4over6 mode">
-  </section>
 
 </back>
 </rfc>
